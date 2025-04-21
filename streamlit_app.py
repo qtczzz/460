@@ -31,7 +31,7 @@ def dijkstra(graph, start, end):
     return ([], float("inf"))
 
 # Streamlit UI
-st.title("🚗 Shortest Path Finder (No NetworkX)")
+st.title("🚗 Shortest Path Finder")
 start = st.sidebar.selectbox("Select starting town:", list(graph.keys()))
 end = st.sidebar.selectbox("Select destination town:", list(graph.keys()))
 
