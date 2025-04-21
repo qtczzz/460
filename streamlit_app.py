@@ -1,49 +1,43 @@
-
 import streamlit as st
+import heapq
 
-import streamlit as st
-import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
+# Define distance data between towns (fictional)
+graph = {
+    "Chicago": {"McLain": 40, "Aurora": 60, "Parker": 50, "Smallville": 70},
+    "McLain": {"Aurora": 10},
+    "Aurora": {"Parker": 20, "Smallville": 55, "Farmer": 40},
+    "Parker": {"Farmer": 50},
+    "Smallville": {"Farmer": 10, "Bayview": 80},
+    "Farmer": {"Bayview": 60},
+    "Bayview": {}
+}
 
-# Define distance data (fictional) between adjacent towns
-edges = [
-    ("Chicago", "McLain", 40),
-    ("Chicago", "Aurora", 60),
-    ("McLain", "Aurora", 10),
-    ("Chicago", "Parker", 50),
-    ("Chicago", "Smallville", 70),
-    ("Aurora", "Parker", 20),
-    ("Aurora", "Smallville", 55),
-    ("Aurora", "Farmer", 40),
-    ("Parker", "Farmer", 50),
-    ("Smallville", "Farmer", 10),
-    ("Farmer", "Bayview", 60),
-    ("Smallville", "Bayview", 80),
-]
+# Dijkstra's algorithm
+def dijkstra(graph, start, end):
+    queue = [(0, start, [])]
+    visited = set()
 
-# Build graph
-G = nx.Graph()
-G.add_weighted_edges_from(edges)
+    while queue:
+        (cost, node, path) = heapq.heappop(queue)
+        if node in visited:
+            continue
+        visited.add(node)
+        path = path + [node]
+        if node == end:
+            return (path, cost)
+        for adj, weight in graph.get(node, {}).items():
+            if adj not in visited:
+                heapq.heappush(queue, (cost + weight, adj, path))
+    return ([], float("inf"))
 
-# Sidebar inputs
-st.sidebar.title("Shortest Path Finder")
-start = st.sidebar.selectbox("Select starting town:", sorted(G.nodes))
-end = st.sidebar.selectbox("Select destination town:", sorted(G.nodes))
+# Streamlit UI
+st.title("🚗 Shortest Path Finder (No NetworkX)")
+start = st.sidebar.selectbox("Select starting town:", list(graph.keys()))
+end = st.sidebar.selectbox("Select destination town:", list(graph.keys()))
 
-# Display shortest path
 if st.sidebar.button("Find Shortest Path"):
-    try:
-        path = nx.shortest_path(G, source=start, target=end, weight='weight')
-        distance = nx.shortest_path_length(G, source=start, target=end, weight='weight')
+    path, distance = dijkstra(graph, start, end)
+    if path:
         st.success(f"Shortest path from {start} to {end}: {' → '.join(path)} (Distance: {distance} miles)")
-    except nx.NetworkXNoPath:
-        st.error("No path exists between the selected towns.")
-
-# Optional: Visualize the graph
-st.write("### Town Network Map")
-fig, ax = plt.subplots(figsize=(10, 6))
-pos = nx.spring_layout(G, seed=42)
-nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=10, ax=ax)
-nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): f"{d} mi" for u, v, d in G.edges(data='weight')}, ax=ax)
-st.pyplot(fig)
+    else:
+        st.error("No path found between the selected towns.")
