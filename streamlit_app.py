@@ -3,12 +3,12 @@ import heapq
 
 # Define distance data between towns (fictional)
 graph = {
-    "Chicago": {"McLain": 40, "Aurora": 60, "Parker": 50, "Smallville": 70},
-    "McLain": {"Aurora": 10},
+    "Chicago": {"McLain": 40, "Aurora": 60, "Parker": 50},
+    "McLain": {"Aurora": 10, "Smallville": 70},
     "Aurora": {"Parker": 20, "Smallville": 55, "Farmer": 40},
     "Parker": {"Farmer": 50},
-    "Smallville": {"Farmer": 10, "Bayview": 80},
-    "Farmer": {"Bayview": 60},
+    "Smallville": {"Farmer": 10, "Bayview": 60},
+    "Farmer": {"Bayview": 80},
     "Bayview": {}
 }
 
