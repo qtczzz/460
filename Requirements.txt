@@ -1,1 +1,6 @@
-streamlitpandasplotlyscikit-learn
+streamlit
+pandas
+plotly
+scikit-learn
+networkx
+matplotlib.pyplot
