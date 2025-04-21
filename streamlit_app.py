@@ -1,30 +1,49 @@
 
 import streamlit as st
 
-# Title
-st.title("📊 Simple Streamlit App")
+import streamlit as st
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
 
-# Sidebar
-st.sidebar.header("User Input")
-user_input = st.sidebar.text_input("Enter some text")
+# Define distance data (fictional) between adjacent towns
+edges = [
+    ("Chicago", "McLain", 40),
+    ("Chicago", "Aurora", 60),
+    ("McLain", "Aurora", 10),
+    ("Chicago", "Parker", 50),
+    ("Chicago", "Smallville", 70),
+    ("Aurora", "Parker", 20),
+    ("Aurora", "Smallville", 55),
+    ("Aurora", "Farmer", 40),
+    ("Parker", "Farmer", 50),
+    ("Smallville", "Farmer", 10),
+    ("Farmer", "Bayview", 60),
+    ("Smallville", "Bayview", 80),
+]
 
-# File uploader
-uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"])
+# Build graph
+G = nx.Graph()
+G.add_weighted_edges_from(edges)
 
-# Main output
-st.write("## Output")
+# Sidebar inputs
+st.sidebar.title("Shortest Path Finder")
+start = st.sidebar.selectbox("Select starting town:", sorted(G.nodes))
+end = st.sidebar.selectbox("Select destination town:", sorted(G.nodes))
 
-# Display user input
-if user_input:
-    st.write(f"You entered: {user_input}")
-else:
-    st.write("Please enter some text in the sidebar.")
+# Display shortest path
+if st.sidebar.button("Find Shortest Path"):
+    try:
+        path = nx.shortest_path(G, source=start, target=end, weight='weight')
+        distance = nx.shortest_path_length(G, source=start, target=end, weight='weight')
+        st.success(f"Shortest path from {start} to {end}: {' → '.join(path)} (Distance: {distance} miles)")
+    except nx.NetworkXNoPath:
+        st.error("No path exists between the selected towns.")
 
-# Display file content
-if uploaded_file:
-    import pandas as pd
-    df = pd.read_csv(uploaded_file)
-    st.write("### Uploaded CSV Preview")
-    st.dataframe(df)
-else:
-    st.write("Upload a CSV file to view its contents.")
+# Optional: Visualize the graph
+st.write("### Town Network Map")
+fig, ax = plt.subplots(figsize=(10, 6))
+pos = nx.spring_layout(G, seed=42)
+nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=10, ax=ax)
+nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): f"{d} mi" for u, v, d in G.edges(data='weight')}, ax=ax)
+st.pyplot(fig)
